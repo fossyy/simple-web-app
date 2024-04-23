@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -43,14 +43,28 @@ func newServer(addr string, handler http.Handler) *http.Server {
 func setupRoute() *http.ServeMux {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		data := map[string]interface{}{
+
+		data := map[any]any{
 			"Request ID": uuid.New().String(),
 			"Timestamp":  time.Now(),
 		}
-		json.NewEncoder(w).Encode(data)
+
+		err := sendJSON(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	})
 	return handler
+}
+
+func sendJSON(w http.ResponseWriter, data map[any]any) error {
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (w writerWrapper) WriteHeader(code int) {
