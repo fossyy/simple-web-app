@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"os"
 
 	"github.com/google/uuid"
 )
@@ -16,7 +17,12 @@ type writerWrapper struct {
 }
 
 func main() {
-	addr := "localhost:8000"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "80"
+	}
+
+	addr := fmt.Sprintf("localhost:%s", port)
 	server := newServer(addr, middleware(setupRoute()))
 
 	fmt.Printf("Listening on http://%s\n", addr)
